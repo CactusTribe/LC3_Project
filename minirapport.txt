@@ -77,5 +77,80 @@ Action et equations logique:
   (table indirection)
   DoubleIndirection=13./14.15
 
+writeSelector
+-------------
+
+Permet de choisir ce que l'on ecrit dans le registre.
+
+Valeur possible:
+- Resultat de l'alu
+- PC
+- Memout
+- Resultat de l'addUnit
+
+RegPC
+-----
+
+Gestion du PC
+
+A chaque front descendant de exec:
+Si jump . UseCondition . TestNZP +  jump . /UseCondition
+  PC <- Resultat add Unit
+Sinon
+  PC <- PC+1
+
+GetAddr
+-------
+
+Choisi l'adresse de la RAM à lire ou ecrire
+
+Valeur de sorti:
+
+              Si DoubleIndirection        Sinon
+Exec          regAddrIndirection          resultat addUnit
+Post Exec     PC                          PC
+Fetch         PC                          PC
+Post Fetch    resultat addUnit            resultat addUnit
+
+Pour effectuer la double indirection, un registre est utilisé contenant l'addr.
+
+Au front descendant de  post-Fetch . DoubleIndirection:
+  regAddrIndirection <- MemOUT
+
+RamCtrl
+-------
+
+Active / Desactive l'ecriture ou la lecture de la RAM
+
+              Lecture                    Ecriture
+
+Exec          Si load                    Si Store
+Post Exec     0                          0
+Fetch         1                          0
+Post Fetch    Si DoubleIndirection       0
 
 
+NZP
+---
+
+Calcule du NZP:
+
+N: RES[15] . /Z
+Z: Or(RES[15..0])
+P: /RES[15] . /Z
+
+Test de saut:
+
+testN= IR[11] . N
+testZ= IR[10] . Z
+testP= IR[9] . P
+testNZP= testN + testZ + testP
+
+
+Set/Reset bit
+-------------
+
+Si set:
+  Out = DataIn +  (1 << bit n)
+Sinon (si reset)
+  Out = DataIn . /(1 << bit n)
